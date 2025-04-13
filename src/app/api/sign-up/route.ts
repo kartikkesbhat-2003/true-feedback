@@ -21,7 +21,7 @@ export async function POST(request: Request) {
 
         const existingUserByEmail = await UserModel.findOne({ email })
 
-        const verfyCode = Math.floor(100000 + Math.random() * 900000).toString();
+        const verifyCode = Math.floor(100000 + Math.random() * 900000).toString();
 
         if (existingUserByEmail) {
             if (existingUserByEmail.isVerified) {
@@ -33,7 +33,7 @@ export async function POST(request: Request) {
             else {
                 const hashedPassword = await bcrypt.hash(password, 10);
                 existingUserByEmail.password = hashedPassword;
-                existingUserByEmail.verfyCode = verfyCode;
+                existingUserByEmail.verifyCode = verifyCode;
                 existingUserByEmail.verifyCodeExpiry = new Date(Date.now() + 60 * 60 * 1000); // 1 hour from now
                 await existingUserByEmail.save()
             }
@@ -47,7 +47,7 @@ export async function POST(request: Request) {
                 username,
                 email,
                 password: hashedPassword,
-                verfyCode,
+                verifyCode,
                 verifyCodeExpiry : expiryDate,
                 isVerified : false,
                 isAcceptingMessages : true,
@@ -57,7 +57,7 @@ export async function POST(request: Request) {
             await newUser.save()
         }
 
-        const emailResponse = await sendVerificationEmail(email, username, verfyCode)
+        const emailResponse = await sendVerificationEmail(email, username, verifyCode)
 
         if (!emailResponse.success) {
             return Response.json({
@@ -76,9 +76,9 @@ export async function POST(request: Request) {
 
     } catch (error) {
         console.error("Error in sign up", error);
-        return Response.json({
-            success: false,
-            message: "Error Registering user",
-        }, { status: 500 });
+        // return Response.json({
+        //     success: false,
+        //     message: "Error Registering user",
+        // }, { status: 500 });
     }
 }
